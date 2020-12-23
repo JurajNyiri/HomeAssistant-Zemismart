@@ -11,9 +11,17 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.components.climate import ClimateEntity
 from homeassistant.util import slugify
-from homeassistant.const import ATTR_TEMPERATURE, TEMP_CELSIUS
+from homeassistant.const import (
+    ATTR_TEMPERATURE,
+    SERVICE_LOCK,
+    SERVICE_UNLOCK,
+    TEMP_CELSIUS,
+)
+from homeassistant.helpers import entity_platform
 from typing import Callable
 from .const import (
+    SCHEMA_SERVICE_LOCK,
+    SCHEMA_SERVICE_UNLOCK,
     SUPPORT_FLAGS,
     HVAC_MODES,
     DEVICE_IP,
@@ -31,7 +39,18 @@ from .utils import getData, setState
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: Callable
 ):
-
+    platform = entity_platform.current_platform.get()
+    platform.async_register_entity_service(
+        SERVICE_LOCK,
+        SCHEMA_SERVICE_LOCK,
+        "lock",
+    )
+    platform = entity_platform.current_platform.get()
+    platform.async_register_entity_service(
+        SERVICE_UNLOCK,
+        SCHEMA_SERVICE_UNLOCK,
+        "unlock",
+    )
     try:
         dps = getData(
             entry.data.get(DEVICE_ID),
@@ -228,4 +247,12 @@ class ZemismartClimateEntity(ClimateEntity):
 
     def turn_off(self):
         setState(self.deviceID, self.deviceKey, self.deviceIP, False, 1)
+        time.sleep(1)
+
+    def lock(self):
+        setState(self.deviceID, self.deviceKey, self.deviceIP, True, 6)
+        time.sleep(1)
+
+    def unlock(self):
+        setState(self.deviceID, self.deviceKey, self.deviceIP, False, 6)
         time.sleep(1)

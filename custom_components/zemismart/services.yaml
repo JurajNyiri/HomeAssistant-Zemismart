@@ -1,0 +1,12 @@
+lock:
+  description: Locks thermostat
+  fields:
+    entity_id:
+      description: "Entity to lock"
+      example: "climate.zemismart_192_168_1_58"
+unlock:
+  description: Unlocks thermostat
+  fields:
+    entity_id:
+      description: "Entity to unlock"
+      example: "climate.zemismart_192_168_1_58"

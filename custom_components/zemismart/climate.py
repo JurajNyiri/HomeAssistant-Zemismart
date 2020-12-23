@@ -20,9 +20,11 @@ from homeassistant.const import (
 from homeassistant.helpers import entity_platform
 from typing import Callable
 from .const import (
+    SCHEMA_SERVICE_CALIBRATE,
     SCHEMA_SERVICE_LOCK,
     SCHEMA_SERVICE_UNLOCK,
     SCHEMA_SERVICE_USE_SENSOR,
+    SERVICE_CALIBRATE,
     SERVICE_USE_SENSOR,
     SUPPORT_FLAGS,
     HVAC_MODES,
@@ -58,6 +60,12 @@ async def async_setup_entry(
         SERVICE_USE_SENSOR,
         SCHEMA_SERVICE_USE_SENSOR,
         "use_sensor",
+    )
+    platform = entity_platform.current_platform.get()
+    platform.async_register_entity_service(
+        SERVICE_CALIBRATE,
+        SCHEMA_SERVICE_CALIBRATE,
+        "calibrate",
     )
     try:
         dps = getData(
@@ -240,7 +248,7 @@ class ZemismartClimateEntity(ClimateEntity):
         time.sleep(1)
 
     def set_swing_mode(self, swing_value):
-        if not swing_value.isnumeric() or int(swing_value) > 9 or int(swing_value) < 2:
+        if int(swing_value) > 9 or int(swing_value) < 2:
             _LOGGER.warn("Chosen swing value %s is incorrect.", str(swing_value))
         else:
             setState(
@@ -272,4 +280,11 @@ class ZemismartClimateEntity(ClimateEntity):
             setState(self.deviceID, self.deviceKey, self.deviceIP, str(1), 102)
         elif sensor == "internal":
             setState(self.deviceID, self.deviceKey, self.deviceIP, str(0), 102)
+        time.sleep(1)
+
+    def calibrate(self, difference):
+        if int(difference) > -10 and int(difference) < 10:
+            setState(self.deviceID, self.deviceKey, self.deviceIP, int(difference), 103)
+        else:
+            _LOGGER.warn("Chosen difference %s is incorrect.", str(difference))
         time.sleep(1)

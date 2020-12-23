@@ -21,6 +21,7 @@ HVAC_MODE_UNKNOWN = "unknown"
 
 ENTITY_ID = "entity_id"
 SENSOR = "sensor"
+DIFFERENCE = "difference"
 
 DEFAULT_DISCOVER_TIMEOUT = 6.0
 DOMAIN = "zemismart"
@@ -44,4 +45,11 @@ SERVICE_USE_SENSOR = "use_sensor"
 SCHEMA_SERVICE_USE_SENSOR = {
     vol.Required(ENTITY_ID): cv.string,
     vol.Required(SENSOR): vol.In(["internal", "external", "both"]),
+}
+SERVICE_CALIBRATE = "calibrate"
+SCHEMA_SERVICE_CALIBRATE = {
+    vol.Required(ENTITY_ID): cv.string,
+    vol.Required(DIFFERENCE): vol.In(
+        [-9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    ),
 }

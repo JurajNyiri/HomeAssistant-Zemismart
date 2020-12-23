@@ -19,6 +19,7 @@ from homeassistant.helpers import config_validation as cv
 HVAC_MODE_MANUAL = "manual"
 HVAC_MODE_UNKNOWN = "unknown"
 
+STATE = "state"
 ENTITY_ID = "entity_id"
 SENSOR = "sensor"
 DIFFERENCE = "difference"
@@ -52,4 +53,9 @@ SCHEMA_SERVICE_CALIBRATE = {
     vol.Required(DIFFERENCE): vol.In(
         [-9, -8, -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     ),
+}
+SERVICE_WINDOW_MODE = "window_mode"
+SCHEMA_SERVICE_WINDOW_MODE = {
+    vol.Required(ENTITY_ID): cv.string,
+    vol.Required(STATE): vol.In(["on", "off"]),
 }

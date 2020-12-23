@@ -24,8 +24,10 @@ from .const import (
     SCHEMA_SERVICE_LOCK,
     SCHEMA_SERVICE_UNLOCK,
     SCHEMA_SERVICE_USE_SENSOR,
+    SCHEMA_SERVICE_WINDOW_MODE,
     SERVICE_CALIBRATE,
     SERVICE_USE_SENSOR,
+    SERVICE_WINDOW_MODE,
     SUPPORT_FLAGS,
     HVAC_MODES,
     DEVICE_IP,
@@ -66,6 +68,12 @@ async def async_setup_entry(
         SERVICE_CALIBRATE,
         SCHEMA_SERVICE_CALIBRATE,
         "calibrate",
+    )
+    platform = entity_platform.current_platform.get()
+    platform.async_register_entity_service(
+        SERVICE_WINDOW_MODE,
+        SCHEMA_SERVICE_WINDOW_MODE,
+        "window_mode",
     )
     try:
         dps = getData(
@@ -287,4 +295,13 @@ class ZemismartClimateEntity(ClimateEntity):
             setState(self.deviceID, self.deviceKey, self.deviceIP, int(difference), 103)
         else:
             _LOGGER.warn("Chosen difference %s is incorrect.", str(difference))
+        time.sleep(1)
+
+    def window_mode(self, state):
+        if state == "on":
+            setState(self.deviceID, self.deviceKey, self.deviceIP, True, 107)
+        elif state == "off":
+            setState(self.deviceID, self.deviceKey, self.deviceIP, False, 107)
+        else:
+            _LOGGER.warn("Chosen window mode %s is incorrect.", str(state))
         time.sleep(1)

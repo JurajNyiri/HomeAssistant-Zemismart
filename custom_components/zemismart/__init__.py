@@ -3,7 +3,6 @@ from .const import DOMAIN, _LOGGER
 from .discovery import TuyaDiscovery
 from homeassistant.const import EVENT_HOMEASSISTANT_STOP
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 
 async def async_setup(hass: HomeAssistant, config: dict):

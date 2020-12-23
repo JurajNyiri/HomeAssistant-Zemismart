@@ -19,6 +19,7 @@ from .const import (
     DEVICE_IP,
     DEVICE_ID,
     DEVICE_KEY,
+    SWING_MODES,
     _LOGGER,
     HVAC_MODE_OFF,
     HVAC_MODE_HEAT,
@@ -110,7 +111,6 @@ class ZemismartClimateEntity(ClimateEntity):
             attributes["sensor"] = "Unknown"
 
         attributes["temperature_calibration"] = self.dps["103"]
-        attributes["swing"] = self.dps["104"]
         attributes["heating"] = self.dps["105"]
         attributes["window_mode"] = self.dps["107"]
         attributes["optimal_start"] = self.dps["108"]
@@ -132,6 +132,14 @@ class ZemismartClimateEntity(ClimateEntity):
     @property
     def hvac_mode(self):
         return self.state()
+
+    @property
+    def swing_modes(self):
+        return SWING_MODES
+
+    @property
+    def swing_mode(self):
+        return self.dps["104"]
 
     @property
     def preset_mode(self):
@@ -201,6 +209,16 @@ class ZemismartClimateEntity(ClimateEntity):
             setState(self.deviceID, self.deviceKey, self.deviceIP, False, 1)
         else:
             _LOGGER.warn("Chosen hvac_mode=%s is incorrect preset.", str(hvac_mode))
+
+        time.sleep(1)
+
+    def set_swing_mode(self, swing_value):
+        if not swing_value.isnumeric() or int(swing_value) > 9 or int(swing_value) < 2:
+            _LOGGER.warn("Chosen swing value %s is incorrect.", str(swing_value))
+        else:
+            setState(
+                self.deviceID, self.deviceKey, self.deviceIP, int(swing_value), 104
+            )
 
         time.sleep(1)
 

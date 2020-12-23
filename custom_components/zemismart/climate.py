@@ -22,6 +22,8 @@ from typing import Callable
 from .const import (
     SCHEMA_SERVICE_LOCK,
     SCHEMA_SERVICE_UNLOCK,
+    SCHEMA_SERVICE_USE_SENSOR,
+    SERVICE_USE_SENSOR,
     SUPPORT_FLAGS,
     HVAC_MODES,
     DEVICE_IP,
@@ -50,6 +52,12 @@ async def async_setup_entry(
         SERVICE_UNLOCK,
         SCHEMA_SERVICE_UNLOCK,
         "unlock",
+    )
+    platform = entity_platform.current_platform.get()
+    platform.async_register_entity_service(
+        SERVICE_USE_SENSOR,
+        SCHEMA_SERVICE_USE_SENSOR,
+        "use_sensor",
     )
     try:
         dps = getData(
@@ -255,4 +263,13 @@ class ZemismartClimateEntity(ClimateEntity):
 
     def unlock(self):
         setState(self.deviceID, self.deviceKey, self.deviceIP, False, 6)
+        time.sleep(1)
+
+    def use_sensor(self, sensor):
+        if sensor == "both":
+            setState(self.deviceID, self.deviceKey, self.deviceIP, str(2), 102)
+        elif sensor == "external":
+            setState(self.deviceID, self.deviceKey, self.deviceIP, str(1), 102)
+        elif sensor == "internal":
+            setState(self.deviceID, self.deviceKey, self.deviceIP, str(0), 102)
         time.sleep(1)

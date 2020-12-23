@@ -10,3 +10,12 @@ unlock:
     entity_id:
       description: "Entity to unlock"
       example: "climate.zemismart_192_168_1_58"
+use_sensor:
+  description: Chooses temperature sensor to use
+  fields:
+    entity_id:
+      description: "Entity to choose temperature sensor for"
+      example: "climate.zemismart_192_168_1_58"
+    sensor:
+      description: "Sensor to use. Possible values: internal, external, both"
+      example: "both"

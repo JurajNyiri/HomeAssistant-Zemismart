@@ -20,6 +20,7 @@ HVAC_MODE_MANUAL = "manual"
 HVAC_MODE_UNKNOWN = "unknown"
 
 ENTITY_ID = "entity_id"
+SENSOR = "sensor"
 
 DEFAULT_DISCOVER_TIMEOUT = 6.0
 DOMAIN = "zemismart"
@@ -39,3 +40,8 @@ SERVICE_LOCK = "set_led_mode"
 SCHEMA_SERVICE_LOCK = {vol.Required(ENTITY_ID): cv.string}
 SERVICE_UNLOCK = "set_led_mode"
 SCHEMA_SERVICE_UNLOCK = {vol.Required(ENTITY_ID): cv.string}
+SERVICE_USE_SENSOR = "use_sensor"
+SCHEMA_SERVICE_USE_SENSOR = {
+    vol.Required(ENTITY_ID): cv.string,
+    vol.Required(SENSOR): vol.In(["internal", "external", "both"]),
+}

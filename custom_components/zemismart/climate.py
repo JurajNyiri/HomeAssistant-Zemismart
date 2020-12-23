@@ -22,10 +22,12 @@ from typing import Callable
 from .const import (
     SCHEMA_SERVICE_CALIBRATE,
     SCHEMA_SERVICE_LOCK,
+    SCHEMA_SERVICE_OPTIMAL_START_MODE,
     SCHEMA_SERVICE_UNLOCK,
     SCHEMA_SERVICE_USE_SENSOR,
     SCHEMA_SERVICE_WINDOW_MODE,
     SERVICE_CALIBRATE,
+    SERVICE_OPTIMAL_START_MODE,
     SERVICE_USE_SENSOR,
     SERVICE_WINDOW_MODE,
     SUPPORT_FLAGS,
@@ -74,6 +76,12 @@ async def async_setup_entry(
         SERVICE_WINDOW_MODE,
         SCHEMA_SERVICE_WINDOW_MODE,
         "window_mode",
+    )
+    platform = entity_platform.current_platform.get()
+    platform.async_register_entity_service(
+        SERVICE_OPTIMAL_START_MODE,
+        SCHEMA_SERVICE_OPTIMAL_START_MODE,
+        "optimal_start",
     )
     try:
         dps = getData(
@@ -304,4 +312,13 @@ class ZemismartClimateEntity(ClimateEntity):
             setState(self.deviceID, self.deviceKey, self.deviceIP, False, 107)
         else:
             _LOGGER.warn("Chosen window mode %s is incorrect.", str(state))
+        time.sleep(1)
+
+    def optimal_start(self, state):
+        if state == "on":
+            setState(self.deviceID, self.deviceKey, self.deviceIP, True, 108)
+        elif state == "off":
+            setState(self.deviceID, self.deviceKey, self.deviceIP, False, 108)
+        else:
+            _LOGGER.warn("Chosen optimal start mode %s is incorrect.", str(state))
         time.sleep(1)

@@ -37,3 +37,12 @@ window_mode:
     state:
       description: "Set window mode on or off. Possible values: on, off."
       example: "off"
+optimal_start:
+  description: Turns on or off optimal start mode
+  fields:
+    entity_id:
+      description: "Entity to set optimal start mode for"
+      example: "climate.zemismart_192_168_1_58"
+    state:
+      description: "Set optimal start mode on or off. Possible values: on, off."
+      example: "off"

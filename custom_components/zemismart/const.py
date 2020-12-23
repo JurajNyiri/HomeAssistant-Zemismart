@@ -59,3 +59,8 @@ SCHEMA_SERVICE_WINDOW_MODE = {
     vol.Required(ENTITY_ID): cv.string,
     vol.Required(STATE): vol.In(["on", "off"]),
 }
+SERVICE_OPTIMAL_START_MODE = "optimal_start"
+SCHEMA_SERVICE_OPTIMAL_START_MODE = {
+    vol.Required(ENTITY_ID): cv.string,
+    vol.Required(STATE): vol.In(["on", "off"]),
+}

@@ -1,0 +1,23 @@
+{
+  "title": "Zemismart: Thermostat",
+  "config": {
+    "step": {
+      "device_select": {
+        "data": {
+          "DEVICE_IP": "Device IP"
+        },
+        "description": "Choose device"
+      },
+      "device_data": {
+        "data": {
+          "KEY": "Secret Key"
+        },
+        "description": "Enter secret key.\n\nSee README on GitHub to figure out how to obtain it."
+      }
+    },
+    "error": {
+      "unknown": "Unknown error",
+      "auth_error": "Invalid key"
+    }
+  }
+}

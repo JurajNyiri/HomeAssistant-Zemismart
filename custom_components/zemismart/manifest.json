@@ -1,0 +1,9 @@
+{
+  "domain": "zemismart",
+  "name": "Zemismart: Thermostat",
+  "documentation": "https://github.com/JurajNyiri/HomeAssistant-Zemismart-Thermostat",
+  "dependencies": [],
+  "codeowners": ["@JurajNyiri"],
+  "requirements": ["tuyaface==1.4.0"],
+  "config_flow": true
+}

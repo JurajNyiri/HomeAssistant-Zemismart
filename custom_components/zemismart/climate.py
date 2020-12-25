@@ -244,7 +244,8 @@ class ZemismartClimateEntity(ClimateEntity):
                 time.sleep(1)
             else:
                 _LOGGER.warn(
-                    "Chosen temperature=%s is incorrect. It needs to be between 18 and 30.",  # todo
+                    "Chosen temperature=%s is incorrect."
+                    + "It needs to be between 18 and 30.",  # todo
                     str(temperature),
                 )
 

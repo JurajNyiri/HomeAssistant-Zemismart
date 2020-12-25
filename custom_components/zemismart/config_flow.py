@@ -18,7 +18,6 @@ class FlowHandler(config_entries.ConfigFlow):
 
     async def async_step_device_select(self, user_input=None):
         """Select the device to add."""
-        # Todo: list only devices not already added
         if DOMAIN not in self.hass.data:
             self.hass.data[DOMAIN] = {}
 

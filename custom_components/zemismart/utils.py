@@ -49,12 +49,22 @@ def getDiscoveredDevices(hass):
             savedIPs.append(entry.data.get(DEVICE_IP))
         for ip in devices:
             device = devices[ip]
-            if (
-                ip not in savedIPs
-                and device["productKey"] in SUPPORTED_PRODUCT_KEYS
-                and device["version"] in SUPPORTED_VERSIONS
-            ):
-                discoveredDevices.append(ip)
+            if ip not in savedIPs:
+                if (
+                    device["productKey"] in SUPPORTED_PRODUCT_KEYS
+                    and device["version"] in SUPPORTED_VERSIONS
+                ):
+                    discoveredDevices.append(ip)
+                else:
+                    _LOGGER.warn(
+                        "Discovered device "
+                        + device["productKey"]
+                        + " ("
+                        + ip
+                        + ") with version "
+                        + device["version"]
+                        + " not currently supported."
+                    )
     return discoveredDevices
 
 

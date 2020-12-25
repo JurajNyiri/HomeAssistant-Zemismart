@@ -1,5 +1,13 @@
 import time
-from .const import UDP_KEY, _LOGGER, MAX_GET_DATA_RETRIES, DOMAIN, DEVICE_IP
+from .const import (
+    UDP_KEY,
+    _LOGGER,
+    MAX_GET_DATA_RETRIES,
+    DOMAIN,
+    DEVICE_IP,
+    SUPPORTED_PRODUCT_KEYS,
+    SUPPORTED_VERSIONS,
+)
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from tuyaface.tuyaclient import TuyaClient
@@ -35,14 +43,17 @@ def getDiscoveredDevices(hass):
     discoveredDevices = list()
     devices = hass.data[DOMAIN]["discovery"].devices
     if len(devices) > 0:
-        print(devices)
-        discoveredIPs = list(devices.keys())
         existingEntries = hass.config_entries.async_entries(DOMAIN)
         savedIPs = list()
         for entry in existingEntries:
             savedIPs.append(entry.data.get(DEVICE_IP))
-        for ip in discoveredIPs:
-            if ip not in savedIPs:
+        for ip in devices:
+            device = devices[ip]
+            if (
+                ip not in savedIPs
+                and device["productKey"] in SUPPORTED_PRODUCT_KEYS
+                and device["version"] in SUPPORTED_VERSIONS
+            ):
                 discoveredDevices.append(ip)
     return discoveredDevices
 

@@ -39,9 +39,9 @@ HVAC_MODES = [HVAC_MODE_OFF, HVAC_MODE_HEAT]
 PRESET_MODES = [PRESET_NONE, PRESET_ECO, PRESET_AWAY, PRESET_HOME, PRESET_SLEEP]
 SWING_MODES = [2, 3, 4, 5, 6, 7, 8, 9]
 
-SERVICE_LOCK = "set_led_mode"
+SERVICE_LOCK = "lock"
 SCHEMA_SERVICE_LOCK = {vol.Required(ENTITY_ID): cv.string}
-SERVICE_UNLOCK = "set_led_mode"
+SERVICE_UNLOCK = "unlock"
 SCHEMA_SERVICE_UNLOCK = {vol.Required(ENTITY_ID): cv.string}
 SERVICE_USE_SENSOR = "use_sensor"
 SCHEMA_SERVICE_USE_SENSOR = {
@@ -66,3 +66,6 @@ SCHEMA_SERVICE_OPTIMAL_START_MODE = {
     vol.Required(STATE): vol.In(["on", "off"]),
 }
 ADD_MANUALLY = "Add manually"
+
+SUPPORTED_PRODUCT_KEYS = ["3uoeudsge0ooafig"]
+SUPPORTED_VERSIONS = ["3.3"]

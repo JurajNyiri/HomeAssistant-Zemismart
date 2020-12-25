@@ -22,12 +22,7 @@ class FlowHandler(config_entries.ConfigFlow):
         if DOMAIN not in self.hass.data:
             self.hass.data[DOMAIN] = {}
 
-        if "discovery" not in self.hass.data[DOMAIN]:
-            self.hass.data[DOMAIN]["discovery"] = await discover()
-
         errors = {}
-        discoveredIPs = getDiscoveredDevices(self.hass)
-        self.deviceIP = ""
         if user_input is not None:
             try:
                 if user_input[DEVICE_IP] == ADD_MANUALLY:
@@ -42,6 +37,10 @@ class FlowHandler(config_entries.ConfigFlow):
             except Exception as e:
                 errors["base"] = "unknown"
                 _LOGGER.error(e)
+        else:
+            self.hass.data[DOMAIN]["discovery"] = await discover()
+        discoveredIPs = getDiscoveredDevices(self.hass)
+        self.deviceIP = ""
 
         if len(discoveredIPs) > 0:
             return self.async_show_form(

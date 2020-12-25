@@ -1,5 +1,4 @@
 import time
-from attr import attr
 from homeassistant.components.climate.const import (
     PRESET_AWAY,
     PRESET_ECO,
@@ -13,13 +12,12 @@ from homeassistant.components.climate import ClimateEntity
 from homeassistant.util import slugify
 from homeassistant.const import (
     ATTR_TEMPERATURE,
-    SERVICE_LOCK,
-    SERVICE_UNLOCK,
     TEMP_CELSIUS,
 )
 from homeassistant.helpers import entity_platform
 from typing import Callable
 from .const import (
+    DOMAIN,
     SCHEMA_SERVICE_CALIBRATE,
     SCHEMA_SERVICE_LOCK,
     SCHEMA_SERVICE_OPTIMAL_START_MODE,
@@ -40,6 +38,8 @@ from .const import (
     HVAC_MODE_OFF,
     HVAC_MODE_HEAT,
     PRESET_MODES,
+    SERVICE_LOCK,
+    SERVICE_UNLOCK,
 )
 from .utils import getData, setState
 
@@ -53,31 +53,26 @@ async def async_setup_entry(
         SCHEMA_SERVICE_LOCK,
         "lock",
     )
-    platform = entity_platform.current_platform.get()
     platform.async_register_entity_service(
         SERVICE_UNLOCK,
         SCHEMA_SERVICE_UNLOCK,
         "unlock",
     )
-    platform = entity_platform.current_platform.get()
     platform.async_register_entity_service(
         SERVICE_USE_SENSOR,
         SCHEMA_SERVICE_USE_SENSOR,
         "use_sensor",
     )
-    platform = entity_platform.current_platform.get()
     platform.async_register_entity_service(
         SERVICE_CALIBRATE,
         SCHEMA_SERVICE_CALIBRATE,
         "calibrate",
     )
-    platform = entity_platform.current_platform.get()
     platform.async_register_entity_service(
         SERVICE_WINDOW_MODE,
         SCHEMA_SERVICE_WINDOW_MODE,
         "window_mode",
     )
-    platform = entity_platform.current_platform.get()
     platform.async_register_entity_service(
         SERVICE_OPTIMAL_START_MODE,
         SCHEMA_SERVICE_OPTIMAL_START_MODE,

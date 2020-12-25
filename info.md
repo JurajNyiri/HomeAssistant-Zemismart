@@ -16,6 +16,10 @@ Broadcast UDP ports 6666 and 6667 **must be open** in firewall for the discovery
 
 There are several ways to obtain the localKey depending on your environment and the devices you own. A good place to start getting info is https://github.com/codetheweb/tuyapi/blob/master/docs/SETUP.md .
 
+### If you block cloud access
+
+You must block DNS requests too (to the local DNS server eg 192.168.1.1). If you only block outbound internet then the device will sit in zombie state, it will refuse / not respond to any connections with the localkey. Connect the devices first with an active internet connection, grab each device localkey and then implement the block.
+
 ## Usage
 
 Add devices via Integrations (search for Zemismart) in Home Assistant UI.

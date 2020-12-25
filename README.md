@@ -117,3 +117,11 @@ Please [open a new issue](https://github.com/JurajNyiri/HomeAssistant-Zemismart/
 ## Thank you
 
 <a href="https://www.buymeacoffee.com/jurajnyiri" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee"  width="150px" ></a>
+
+# Disclaimer
+
+Author is in no way affiliated with Zemismart or Tuya.
+
+Author does not guarantee functionality of this integration and is not responsible for any damage.
+
+All product names, trademarks and registered trademarks in this repository, are property of their respective owners.

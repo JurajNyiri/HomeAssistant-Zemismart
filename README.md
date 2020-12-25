@@ -4,9 +4,9 @@ Custom component - Zemismart - to add Zemismart devices into Home Assistant
 
 This integration allows full local control of your Zemismart devices along with Zemismart specific features not available in the official [Tuya](https://www.home-assistant.io/integrations/tuya/) or [local tuya](https://github.com/rospogrigio/localtuya) integrations.
 
-It also allows you to use the application along with the Home Assistant running, or even multiple Home Assistant instances communicating with the same device.
+It also allows you to use the application along with the Home Assistant running, or even multiple Home Assistant instances communicating with the same device. While you are using the application, the control via Home Assistant is not available.
 
-## Devices currently supported:
+## Supported Devices
 
 <details>
   <summary>Zemismart Electric Floor Heating Thermostat</summary>

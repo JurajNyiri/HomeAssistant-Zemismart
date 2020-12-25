@@ -10,33 +10,21 @@ from .const import (
 )
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from tuyaface.tuyaclient import TuyaClient
+import tinytuya
 
 
-def getData(deviceID, deviceKey, deviceIP, retry=True):
-    device = {
-        "protocol": "3.3",
-        "deviceid": deviceID,
-        "localkey": deviceKey,
-        "ip": deviceIP,
-    }
-    retries = 0
-
-    try:
-        client = TuyaClient(device)
-        client.start()
-        data = client.status()
-        while data is None and retry and retries < MAX_GET_DATA_RETRIES:
+def getData(deviceID, deviceKey, deviceIP, retry=True, retries=0):
+    if retries >= MAX_GET_DATA_RETRIES:
+        return False
+    else:
+        try:
+            client = tinytuya.Device(deviceID, deviceIP, deviceKey)
+            client.set_version(3.3)
             data = client.status()
-            _LOGGER.warn("Retrying getting data in 1 second...")
-            retries += 1
+            return data
+        except Exception:
             time.sleep(1)
-
-        client.stop_client()
-        return data
-    except Exception as e:
-        _LOGGER.error(e)
-    return False
+            return getData(deviceID, deviceKey, deviceIP, retry, retries + 1)
 
 
 def getDiscoveredDevices(hass):
@@ -68,29 +56,22 @@ def getDiscoveredDevices(hass):
     return discoveredDevices
 
 
-def setState(deviceID, deviceKey, deviceIP, dpsValue, dpsIndex: int, retry=True):
-    device = {
-        "protocol": "3.3",
-        "deviceid": deviceID,
-        "localkey": deviceKey,
-        "ip": deviceIP,
-    }
-    retries = 0
-
-    try:
-        client = TuyaClient(device)
-        client.start()
-        data = client.set_state(dpsValue, dpsIndex)
-        while data is not True and retry and retries < MAX_GET_DATA_RETRIES:
-            data = client.set_state(dpsValue, dpsIndex)
-            _LOGGER.warn("Retrying setting data in 1 second...")
-            retries += 1
+def setState(
+    deviceID, deviceKey, deviceIP, dpsValue, dpsIndex: int, retry=True, retries=0
+):
+    if retries >= MAX_GET_DATA_RETRIES:
+        return False
+    else:
+        try:
+            client = tinytuya.Device(deviceID, deviceIP, deviceKey)
+            client.set_version(3.3)
+            data = client.set_value(dpsIndex, dpsValue)
+            return data
+        except Exception:
             time.sleep(1)
-        client.stop_client()
-        return data
-    except Exception as e:
-        _LOGGER.error(e)
-    return False
+            return setState(
+                deviceID, deviceKey, deviceIP, dpsValue, dpsIndex, retry, retries + 1
+            )
 
 
 def decrypt_udp(message):

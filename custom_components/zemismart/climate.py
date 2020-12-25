@@ -17,7 +17,6 @@ from homeassistant.const import (
 from homeassistant.helpers import entity_platform
 from typing import Callable
 from .const import (
-    DOMAIN,
     SCHEMA_SERVICE_CALIBRATE,
     SCHEMA_SERVICE_LOCK,
     SCHEMA_SERVICE_OPTIMAL_START_MODE,
@@ -40,6 +39,7 @@ from .const import (
     PRESET_MODES,
     SERVICE_LOCK,
     SERVICE_UNLOCK,
+    DEFAULT_DPS,
 )
 from .utils import getData, setState
 
@@ -83,7 +83,8 @@ async def async_setup_entry(
             entry.data.get(DEVICE_ID),
             entry.data.get(DEVICE_KEY),
             entry.data.get(DEVICE_IP),
-        )["dps"]
+        )
+
         return async_add_entities(
             [
                 ZemismartClimateEntity(
@@ -106,10 +107,21 @@ class ZemismartClimateEntity(ClimateEntity):
         self.deviceIP = entry.data.get(DEVICE_IP)
         self.deviceID = entry.data.get(DEVICE_ID)
         self.deviceKey = entry.data.get(DEVICE_KEY)
-        self.dps = dps
+        if dps is False:
+            self.isAvailable = False
+            self.dps = DEFAULT_DPS
+        else:
+            self.isAvailable = True
+            self.dps = dps["dps"]
 
     def manualUpdate(self):
-        self.dps = getData(self.deviceID, self.deviceKey, self.deviceIP)["dps"]
+        newDPS = getData(self.deviceID, self.deviceKey, self.deviceIP)
+        if newDPS is False:
+            self.isAvailable = False
+            _LOGGER.warn(self.deviceIP + " is not available.")
+        else:
+            self.isAvailable = True
+            self.dps = newDPS["dps"]
 
     @property
     def should_poll(self):
@@ -125,6 +137,8 @@ class ZemismartClimateEntity(ClimateEntity):
 
     @property
     def state(self):
+        if not self.isAvailable:
+            return "unavailable"
         if self.dps["1"]:
             return HVAC_MODE_HEAT
         else:
@@ -219,100 +233,116 @@ class ZemismartClimateEntity(ClimateEntity):
 
     def set_temperature(self, **kwargs):
         """Set new target temperature."""
-        temperature = kwargs.get(ATTR_TEMPERATURE)
-        if temperature is None:
-            return
-        elif temperature >= 18 and temperature <= 30:  # todo
-            setState(self.deviceID, self.deviceKey, self.deviceIP, int(temperature), 2)
-            time.sleep(1)
-        else:
-            _LOGGER.warn(
-                "Chosen temperature=%s is incorrect. It needs to be between 18 and 30.",  # todo
-                str(temperature),
-            )
+        if self.isAvailable:
+            temperature = kwargs.get(ATTR_TEMPERATURE)
+            if temperature is None:
+                return
+            elif temperature >= 18 and temperature <= 30:  # todo
+                setState(
+                    self.deviceID, self.deviceKey, self.deviceIP, int(temperature), 2
+                )
+                time.sleep(1)
+            else:
+                _LOGGER.warn(
+                    "Chosen temperature=%s is incorrect. It needs to be between 18 and 30.",  # todo
+                    str(temperature),
+                )
 
     def set_preset_mode(self, preset):
-        if preset == PRESET_NONE:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, str(0), 4)
-        elif preset == PRESET_HOME:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, str(1), 4)
-        elif preset == PRESET_AWAY:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, str(2), 4)
-        elif preset == PRESET_ECO:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, str(3), 4)
-        elif preset == PRESET_SLEEP:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, str(4), 4)
-        else:
-            _LOGGER.warn("Chosen preset=%s is incorrect preset.", str(preset))
+        if self.isAvailable:
+            if preset == PRESET_NONE:
+                setState(self.deviceID, self.deviceKey, self.deviceIP, str(0), 4)
+            elif preset == PRESET_HOME:
+                setState(self.deviceID, self.deviceKey, self.deviceIP, str(1), 4)
+            elif preset == PRESET_AWAY:
+                setState(self.deviceID, self.deviceKey, self.deviceIP, str(2), 4)
+            elif preset == PRESET_ECO:
+                setState(self.deviceID, self.deviceKey, self.deviceIP, str(3), 4)
+            elif preset == PRESET_SLEEP:
+                setState(self.deviceID, self.deviceKey, self.deviceIP, str(4), 4)
+            else:
+                _LOGGER.warn("Chosen preset=%s is incorrect preset.", str(preset))
 
-        time.sleep(1)
+            time.sleep(1)
 
     def set_hvac_mode(self, hvac_mode):
-        if hvac_mode == HVAC_MODE_HEAT:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, True, 1)
-        elif hvac_mode == HVAC_MODE_OFF:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, False, 1)
-        else:
-            _LOGGER.warn("Chosen hvac_mode=%s is incorrect preset.", str(hvac_mode))
+        if self.isAvailable:
+            if hvac_mode == HVAC_MODE_HEAT:
+                setState(self.deviceID, self.deviceKey, self.deviceIP, True, 1)
+            elif hvac_mode == HVAC_MODE_OFF:
+                setState(self.deviceID, self.deviceKey, self.deviceIP, False, 1)
+            else:
+                _LOGGER.warn("Chosen hvac_mode=%s is incorrect preset.", str(hvac_mode))
 
-        time.sleep(1)
+            time.sleep(1)
 
     def set_swing_mode(self, swing_value):
-        if int(swing_value) > 9 or int(swing_value) < 2:
-            _LOGGER.warn("Chosen swing value %s is incorrect.", str(swing_value))
-        else:
-            setState(
-                self.deviceID, self.deviceKey, self.deviceIP, int(swing_value), 104
-            )
+        if self.isAvailable:
+            if int(swing_value) > 9 or int(swing_value) < 2:
+                _LOGGER.warn("Chosen swing value %s is incorrect.", str(swing_value))
+            else:
+                setState(
+                    self.deviceID, self.deviceKey, self.deviceIP, int(swing_value), 104
+                )
 
-        time.sleep(1)
+            time.sleep(1)
 
     def turn_on(self):
-        setState(self.deviceID, self.deviceKey, self.deviceIP, True, 1)
-        time.sleep(1)
+        if self.isAvailable:
+            setState(self.deviceID, self.deviceKey, self.deviceIP, True, 1)
+            time.sleep(1)
 
     def turn_off(self):
-        setState(self.deviceID, self.deviceKey, self.deviceIP, False, 1)
-        time.sleep(1)
+        if self.isAvailable:
+            setState(self.deviceID, self.deviceKey, self.deviceIP, False, 1)
+            time.sleep(1)
 
     def lock(self):
-        setState(self.deviceID, self.deviceKey, self.deviceIP, True, 6)
-        time.sleep(1)
+        if self.isAvailable:
+            setState(self.deviceID, self.deviceKey, self.deviceIP, True, 6)
+            time.sleep(1)
 
     def unlock(self):
-        setState(self.deviceID, self.deviceKey, self.deviceIP, False, 6)
-        time.sleep(1)
+        if self.isAvailable:
+            setState(self.deviceID, self.deviceKey, self.deviceIP, False, 6)
+            time.sleep(1)
 
     def use_sensor(self, sensor):
-        if sensor == "both":
-            setState(self.deviceID, self.deviceKey, self.deviceIP, str(2), 102)
-        elif sensor == "external":
-            setState(self.deviceID, self.deviceKey, self.deviceIP, str(1), 102)
-        elif sensor == "internal":
-            setState(self.deviceID, self.deviceKey, self.deviceIP, str(0), 102)
-        time.sleep(1)
+        if self.isAvailable:
+            if sensor == "both":
+                setState(self.deviceID, self.deviceKey, self.deviceIP, str(2), 102)
+            elif sensor == "external":
+                setState(self.deviceID, self.deviceKey, self.deviceIP, str(1), 102)
+            elif sensor == "internal":
+                setState(self.deviceID, self.deviceKey, self.deviceIP, str(0), 102)
+            time.sleep(1)
 
     def calibrate(self, difference):
-        if int(difference) > -10 and int(difference) < 10:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, int(difference), 103)
-        else:
-            _LOGGER.warn("Chosen difference %s is incorrect.", str(difference))
-        time.sleep(1)
+        if self.isAvailable:
+            if int(difference) > -10 and int(difference) < 10:
+                setState(
+                    self.deviceID, self.deviceKey, self.deviceIP, int(difference), 103
+                )
+            else:
+                _LOGGER.warn("Chosen difference %s is incorrect.", str(difference))
+            time.sleep(1)
 
     def window_mode(self, state):
-        if state == "on":
-            setState(self.deviceID, self.deviceKey, self.deviceIP, True, 107)
-        elif state == "off":
-            setState(self.deviceID, self.deviceKey, self.deviceIP, False, 107)
-        else:
-            _LOGGER.warn("Chosen window mode %s is incorrect.", str(state))
-        time.sleep(1)
+        if self.isAvailable:
+            if state == "on":
+                setState(self.deviceID, self.deviceKey, self.deviceIP, True, 107)
+            elif state == "off":
+                setState(self.deviceID, self.deviceKey, self.deviceIP, False, 107)
+            else:
+                _LOGGER.warn("Chosen window mode %s is incorrect.", str(state))
+            time.sleep(1)
 
     def optimal_start(self, state):
-        if state == "on":
-            setState(self.deviceID, self.deviceKey, self.deviceIP, True, 108)
-        elif state == "off":
-            setState(self.deviceID, self.deviceKey, self.deviceIP, False, 108)
-        else:
-            _LOGGER.warn("Chosen optimal start mode %s is incorrect.", str(state))
-        time.sleep(1)
+        if self.isAvailable:
+            if state == "on":
+                setState(self.deviceID, self.deviceKey, self.deviceIP, True, 108)
+            elif state == "off":
+                setState(self.deviceID, self.deviceKey, self.deviceIP, False, 108)
+            else:
+                _LOGGER.warn("Chosen optimal start mode %s is incorrect.", str(state))
+            time.sleep(1)

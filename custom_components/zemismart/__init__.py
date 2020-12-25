@@ -11,13 +11,11 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
     def handleShutdown(event):
         """Clean up resources when shutting down."""
-        hass.data[DOMAIN]["discovery"].close()
 
     try:
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STOP, handleShutdown)
     except Exception:
         _LOGGER.exception("failed to set up zemismart")
-
     return True
 
 

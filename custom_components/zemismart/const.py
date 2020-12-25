@@ -69,3 +69,20 @@ ADD_MANUALLY = "Add manually"
 
 SUPPORTED_PRODUCT_KEYS = ["3uoeudsge0ooafig"]
 SUPPORTED_VERSIONS = ["3.3"]
+
+DEFAULT_DPS = {
+    "1": True,
+    "2": 0,
+    "3": 0,
+    "4": "0",
+    "6": False,
+    "12": 0,
+    "101": 0,
+    "102": "0",
+    "103": 0,
+    "104": 0,
+    "105": False,
+    "107": False,
+    "108": False,
+    "110": 5,
+}

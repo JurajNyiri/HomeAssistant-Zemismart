@@ -4,6 +4,6 @@
   "documentation": "https://github.com/JurajNyiri/HomeAssistant-Zemismart",
   "dependencies": [],
   "codeowners": ["@JurajNyiri"],
-  "requirements": ["tuyaface==1.4.0"],
+  "requirements": ["tinytuya==1.1.2"],
   "config_flow": true
 }

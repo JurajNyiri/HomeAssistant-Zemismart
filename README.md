@@ -56,9 +56,7 @@ Following built in climate services are supported:
 - climate.turn_off
 - climate.turn_on
 
-This integration additionally creates:
-
-- zemismart.\* services to control specific features of the device
+This integration additionally creates zemismart.\* services to control specific features of the device.
 
 <details>
   <summary>zemismart.calibrate</summary>

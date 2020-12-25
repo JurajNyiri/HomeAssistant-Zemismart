@@ -16,6 +16,7 @@ from homeassistant.components.climate.const import (
 from homeassistant.helpers import config_validation as cv
 
 
+MAX_GET_DATA_RETRIES = 3
 HVAC_MODE_MANUAL = "manual"
 HVAC_MODE_UNKNOWN = "unknown"
 
@@ -64,3 +65,4 @@ SCHEMA_SERVICE_OPTIMAL_START_MODE = {
     vol.Required(ENTITY_ID): cv.string,
     vol.Required(STATE): vol.In(["on", "off"]),
 }
+ADD_MANUALLY = "Add manually"

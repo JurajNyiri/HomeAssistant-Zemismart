@@ -115,7 +115,6 @@ class ZemismartClimateEntity(ClimateEntity):
 
     def manualUpdate(self):
         self.dps = getData(self.deviceID, self.deviceKey, self.deviceIP)["dps"]
-        print(self.dps)
 
     @property
     def should_poll(self):

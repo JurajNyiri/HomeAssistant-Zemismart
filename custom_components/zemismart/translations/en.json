@@ -10,9 +10,17 @@
       },
       "device_data": {
         "data": {
-          "KEY": "Secret Key"
+          "DEVICE_KEY": "Device Key"
         },
-        "description": "Enter secret key.\n\nSee README on GitHub to figure out how to obtain it."
+        "description": "Enter device key.\n\nSee README on GitHub to figure out how to obtain it."
+      },
+      "device_manual": {
+        "data": {
+          "DEVICE_IP": "Device IP",
+          "DEVICE_KEY": "Device Key",
+          "DEVICE_ID": "Device ID"
+        },
+        "description": "Enter device ID, IP and key.\n\nSee README on GitHub to figure out how to obtain it."
       }
     },
     "error": {

@@ -173,6 +173,7 @@ class ZemismartClimateEntity(ClimateEntity):
         attributes["heating"] = self.dps["105"]
         attributes["window_mode"] = self.dps["107"]
         attributes["optimal_start"] = self.dps["108"]
+        attributes["error"] = self.dps["101"] == "0"
 
         return attributes
 

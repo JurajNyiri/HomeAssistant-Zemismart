@@ -49,34 +49,22 @@ async def async_setup_entry(
 ):
     platform = entity_platform.current_platform.get()
     platform.async_register_entity_service(
-        SERVICE_LOCK,
-        SCHEMA_SERVICE_LOCK,
-        "lock",
+        SERVICE_LOCK, SCHEMA_SERVICE_LOCK, "lock",
     )
     platform.async_register_entity_service(
-        SERVICE_UNLOCK,
-        SCHEMA_SERVICE_UNLOCK,
-        "unlock",
+        SERVICE_UNLOCK, SCHEMA_SERVICE_UNLOCK, "unlock",
     )
     platform.async_register_entity_service(
-        SERVICE_USE_SENSOR,
-        SCHEMA_SERVICE_USE_SENSOR,
-        "use_sensor",
+        SERVICE_USE_SENSOR, SCHEMA_SERVICE_USE_SENSOR, "use_sensor",
     )
     platform.async_register_entity_service(
-        SERVICE_CALIBRATE,
-        SCHEMA_SERVICE_CALIBRATE,
-        "calibrate",
+        SERVICE_CALIBRATE, SCHEMA_SERVICE_CALIBRATE, "calibrate",
     )
     platform.async_register_entity_service(
-        SERVICE_WINDOW_MODE,
-        SCHEMA_SERVICE_WINDOW_MODE,
-        "window_mode",
+        SERVICE_WINDOW_MODE, SCHEMA_SERVICE_WINDOW_MODE, "window_mode",
     )
     platform.async_register_entity_service(
-        SERVICE_OPTIMAL_START_MODE,
-        SCHEMA_SERVICE_OPTIMAL_START_MODE,
-        "optimal_start",
+        SERVICE_OPTIMAL_START_MODE, SCHEMA_SERVICE_OPTIMAL_START_MODE, "optimal_start",
     )
     try:
         dps = getData(
@@ -85,15 +73,7 @@ async def async_setup_entry(
             entry.data.get(DEVICE_IP),
         )
 
-        return async_add_entities(
-            [
-                ZemismartClimateEntity(
-                    hass,
-                    entry,
-                    dps,
-                )
-            ]
-        )
+        return async_add_entities([ZemismartClimateEntity(hass, entry, dps,)])
     except Exception as e:
         _LOGGER.error(e)
     return False
@@ -137,7 +117,11 @@ class ZemismartClimateEntity(ClimateEntity):
 
     @property
     def state(self):
-        if not self.isAvailable:
+        if "1" not in self.dps or not self.isAvailable:
+            _LOGGER.error(
+                "Data returned from thermostat %s does not make sense. Try restarting it.",
+                str(self.name),
+            )
             return "unavailable"
         if self.dps["1"]:
             return HVAC_MODE_HEAT
@@ -155,6 +139,18 @@ class ZemismartClimateEntity(ClimateEntity):
     @property
     def device_state_attributes(self):
         attributes = {}
+
+        if (
+            "6" not in self.dps
+            or "12" not in self.dps
+            or "101" not in self.dps
+            or "102" not in self.dps
+            or "103" not in self.dps
+            or "105" not in self.dps
+            or "107" not in self.dps
+            or "108" not in self.dps
+        ):
+            return attributes
 
         attributes["locked"] = self.dps["6"]
         attributes["overheat_protection"] = self.dps["12"] == "1"
@@ -183,6 +179,8 @@ class ZemismartClimateEntity(ClimateEntity):
 
     @property
     def target_temperature(self):
+        if "2" not in self.dps:
+            return 0
         return float(self.dps["2"])
 
     @property
@@ -199,10 +197,14 @@ class ZemismartClimateEntity(ClimateEntity):
 
     @property
     def swing_mode(self):
+        if "104" not in self.dps:
+            return "unknown"
         return self.dps["104"]
 
     @property
     def preset_mode(self):
+        if "4" not in self.dps:
+            return "unknown"
         if self.dps["4"] == "1":
             return PRESET_HOME
         elif self.dps["4"] == "2":
@@ -219,6 +221,8 @@ class ZemismartClimateEntity(ClimateEntity):
 
     @property
     def current_temperature(self):
+        if "3" not in self.dps:
+            return 0
         return float(self.dps["3"])
 
     @property

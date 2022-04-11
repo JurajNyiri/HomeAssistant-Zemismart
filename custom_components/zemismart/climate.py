@@ -137,7 +137,7 @@ class ZemismartClimateEntity(ClimateEntity):
         return slugify(f"zemismart_{self.deviceIP}")
 
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         attributes = {}
 
         if (

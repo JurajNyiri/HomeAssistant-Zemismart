@@ -1,4 +1,5 @@
 import time
+import asyncio
 from homeassistant.components.climate.const import (
     PRESET_AWAY,
     PRESET_ECO,
@@ -17,6 +18,7 @@ from homeassistant.const import (
 from homeassistant.helpers import entity_platform
 from typing import Callable
 from .const import (
+    DOMAIN,
     SCHEMA_SERVICE_CALIBRATE,
     SCHEMA_SERVICE_LOCK,
     SCHEMA_SERVICE_OPTIMAL_START_MODE,
@@ -42,6 +44,7 @@ from .const import (
     DEFAULT_DPS,
 )
 from .utils import getData, setState
+from homeassistant.helpers.entity import DeviceInfo
 
 
 async def async_setup_entry(
@@ -67,7 +70,8 @@ async def async_setup_entry(
         SERVICE_OPTIMAL_START_MODE, SCHEMA_SERVICE_OPTIMAL_START_MODE, "optimal_start",
     )
     try:
-        dps = getData(
+        dps = await getData(
+            hass,
             entry.data.get(DEVICE_ID),
             entry.data.get(DEVICE_KEY),
             entry.data.get(DEVICE_IP),
@@ -83,6 +87,7 @@ class ZemismartClimateEntity(ClimateEntity):
     def __init__(self, hass: HomeAssistant, entry: dict, dps):
         super().__init__()
         self._unit = "C"
+        self._hass = hass
         self._icon = "mdi:alert-decagram"
         self.deviceIP = entry.data.get(DEVICE_IP)
         self.deviceID = entry.data.get(DEVICE_ID)
@@ -94,8 +99,8 @@ class ZemismartClimateEntity(ClimateEntity):
             self.isAvailable = True
             self.dps = dps["dps"]
 
-    def manualUpdate(self):
-        newDPS = getData(self.deviceID, self.deviceKey, self.deviceIP)
+    async def manualUpdate(self):
+        newDPS = await getData(self._hass, self.deviceID, self.deviceKey, self.deviceIP)
         if newDPS is False:
             self.isAvailable = False
             _LOGGER.warn(self.deviceIP + " is not available.")
@@ -135,6 +140,15 @@ class ZemismartClimateEntity(ClimateEntity):
     @property
     def name(self):
         return slugify(f"zemismart_{self.deviceIP}")
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return DeviceInfo(
+            identifiers={(DOMAIN, slugify(f"{self.deviceIP}_zemismart"))},
+            connections={},
+            name=self.name,
+            manufacturer="Zemismart"
+        )
 
     @property
     def extra_state_attributes(self):
@@ -233,20 +247,21 @@ class ZemismartClimateEntity(ClimateEntity):
     def max_temp(self):
         return 30
 
-    def update(self):
-        self.manualUpdate()
+    async def async_update(self) -> None:
+        await self.manualUpdate()
 
-    def set_temperature(self, **kwargs):
+    async def async_set_temperature(self, **kwargs):
         """Set new target temperature."""
         if self.isAvailable:
             temperature = kwargs.get(ATTR_TEMPERATURE)
             if temperature is None:
                 return
             elif temperature >= 18 and temperature <= 30:  # todo
-                setState(
-                    self.deviceID, self.deviceKey, self.deviceIP, int(temperature), 2
+                await setState(
+                    self._hass, self.deviceID, self.deviceKey, self.deviceIP, int(
+                        temperature), 2
                 )
-                time.sleep(1)
+                await asyncio.sleep(1)
             else:
                 _LOGGER.warn(
                     "Chosen temperature=%s is incorrect."
@@ -254,101 +269,103 @@ class ZemismartClimateEntity(ClimateEntity):
                     str(temperature),
                 )
 
-    def set_preset_mode(self, preset):
+    async def async_set_preset_mode(self, preset):
         if self.isAvailable:
             if preset == PRESET_NONE:
-                setState(self.deviceID, self.deviceKey, self.deviceIP, str(0), 4)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, str(0), 4)
             elif preset == PRESET_HOME:
-                setState(self.deviceID, self.deviceKey, self.deviceIP, str(1), 4)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, str(1), 4)
             elif preset == PRESET_AWAY:
-                setState(self.deviceID, self.deviceKey, self.deviceIP, str(2), 4)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, str(2), 4)
             elif preset == PRESET_ECO:
-                setState(self.deviceID, self.deviceKey, self.deviceIP, str(3), 4)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, str(3), 4)
             elif preset == PRESET_SLEEP:
-                setState(self.deviceID, self.deviceKey, self.deviceIP, str(4), 4)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, str(4), 4)
             else:
                 _LOGGER.warn("Chosen preset=%s is incorrect preset.", str(preset))
 
-            time.sleep(1)
+            await asyncio.sleep(1)
 
-    def set_hvac_mode(self, hvac_mode):
+    async def async_set_hvac_mode(self, hvac_mode):
         if self.isAvailable:
             if hvac_mode == HVAC_MODE_HEAT:
-                setState(self.deviceID, self.deviceKey, self.deviceIP, True, 1)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, True, 1)
             elif hvac_mode == HVAC_MODE_OFF:
-                setState(self.deviceID, self.deviceKey, self.deviceIP, False, 1)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, False, 1)
             else:
                 _LOGGER.warn("Chosen hvac_mode=%s is incorrect preset.", str(hvac_mode))
 
-            time.sleep(1)
+            await asyncio.sleep(1)
 
-    def set_swing_mode(self, swing_value):
+    async def async_set_swing_mode(self, swing_value):
         if self.isAvailable:
             if int(swing_value) > 9 or int(swing_value) < 2:
                 _LOGGER.warn("Chosen swing value %s is incorrect.", str(swing_value))
             else:
-                setState(
-                    self.deviceID, self.deviceKey, self.deviceIP, int(swing_value), 104
+                await setState(
+                    self._hass, self.deviceID, self.deviceKey, self.deviceIP, int(
+                        swing_value), 104
                 )
 
-            time.sleep(1)
+            await asyncio.sleep(1)
 
-    def turn_on(self):
+    async def async_turn_on(self):
         if self.isAvailable:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, True, 1)
-            time.sleep(1)
+            await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, True, 1)
+            await asyncio.sleep(1)
 
-    def turn_off(self):
+    async def async_turn_off(self):
         if self.isAvailable:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, False, 1)
-            time.sleep(1)
+            await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, False, 1)
+            await asyncio.sleep(1)
 
-    def lock(self):
+    async def async_lock(self):
         if self.isAvailable:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, True, 6)
-            time.sleep(1)
+            await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, True, 6)
+            await asyncio.sleep(1)
 
-    def unlock(self):
+    async def async_unlock(self):
         if self.isAvailable:
-            setState(self.deviceID, self.deviceKey, self.deviceIP, False, 6)
-            time.sleep(1)
+            await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, False, 6)
+            await asyncio.sleep(1)
 
-    def use_sensor(self, sensor):
+    async def async_use_sensor(self, sensor):
         if self.isAvailable:
             if sensor == "both":
-                setState(self.deviceID, self.deviceKey, self.deviceIP, str(2), 102)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, str(2), 102)
             elif sensor == "external":
-                setState(self.deviceID, self.deviceKey, self.deviceIP, str(1), 102)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, str(1), 102)
             elif sensor == "internal":
-                setState(self.deviceID, self.deviceKey, self.deviceIP, str(0), 102)
-            time.sleep(1)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, str(0), 102)
+            await asyncio.sleep(1)
 
-    def calibrate(self, difference):
+    async def async_calibrate(self, difference):
         if self.isAvailable:
             if int(difference) > -10 and int(difference) < 10:
-                setState(
-                    self.deviceID, self.deviceKey, self.deviceIP, int(difference), 103
+                await setState(
+                    self._hass, self.deviceID, self.deviceKey, self.deviceIP, int(
+                        difference), 103
                 )
             else:
                 _LOGGER.warn("Chosen difference %s is incorrect.", str(difference))
-            time.sleep(1)
+            await asyncio.sleep(1)
 
-    def window_mode(self, state):
+    async def async_window_mode(self, state):
         if self.isAvailable:
             if state == "on":
-                setState(self.deviceID, self.deviceKey, self.deviceIP, True, 107)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, True, 107)
             elif state == "off":
-                setState(self.deviceID, self.deviceKey, self.deviceIP, False, 107)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, False, 107)
             else:
                 _LOGGER.warn("Chosen window mode %s is incorrect.", str(state))
-            time.sleep(1)
+            await asyncio.sleep(1)
 
-    def optimal_start(self, state):
+    async def async_optimal_start(self, state):
         if self.isAvailable:
             if state == "on":
-                setState(self.deviceID, self.deviceKey, self.deviceIP, True, 108)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, True, 108)
             elif state == "off":
-                setState(self.deviceID, self.deviceKey, self.deviceIP, False, 108)
+                await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, False, 108)
             else:
                 _LOGGER.warn("Chosen optimal start mode %s is incorrect.", str(state))
-            time.sleep(1)
+            await asyncio.sleep(1)

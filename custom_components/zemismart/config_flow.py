@@ -64,7 +64,9 @@ class FlowHandler(config_entries.ConfigFlow):
             try:
                 self.deviceKey = user_input[DEVICE_KEY]
 
-                if getData(self.deviceID, self.deviceKey, self.deviceIP):
+                data = await getData(self.hass, self.deviceID, self.deviceKey, self.deviceIP)
+
+                if data:
                     return self.async_create_entry(
                         title=self.deviceIP,
                         data={
@@ -104,7 +106,8 @@ class FlowHandler(config_entries.ConfigFlow):
                 self.deviceID = user_input[DEVICE_ID]
                 self.deviceKey = user_input[DEVICE_KEY]
 
-                if getData(self.deviceID, self.deviceKey, self.deviceIP):
+                data = await getData(self.hass, self.deviceID, self.deviceKey, self.deviceIP)
+                if data:
                     return self.async_create_entry(
                         title=self.deviceIP,
                         data={

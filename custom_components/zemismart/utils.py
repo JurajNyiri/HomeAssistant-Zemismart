@@ -1,4 +1,3 @@
-import time
 from .const import (
     UDP_KEY,
     _LOGGER,
@@ -11,20 +10,23 @@ from .const import (
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 import tinytuya
+import asyncio
 
 
-def getData(deviceID, deviceKey, deviceIP, retry=True, retries=0):
+async def getData(hass, deviceID, deviceKey, deviceIP, retry=True, retries=0):
     if retries >= MAX_GET_DATA_RETRIES:
         return False
     else:
         try:
             client = tinytuya.Device(deviceID, deviceIP, deviceKey)
             client.set_version(3.3)
-            data = client.status()
+            data = await hass.async_add_executor_job(
+                client.status,
+            )
             return data
         except Exception:
-            time.sleep(1)
-            return getData(deviceID, deviceKey, deviceIP, retry, retries + 1)
+            await asyncio.sleep(1)
+            return getData(hass, deviceID, deviceKey, deviceIP, retry, retries + 1)
 
 
 def getDiscoveredDevices(hass):
@@ -56,8 +58,8 @@ def getDiscoveredDevices(hass):
     return discoveredDevices
 
 
-def setState(
-    deviceID, deviceKey, deviceIP, dpsValue, dpsIndex: int, retry=True, retries=0
+async def setState(
+    hass, deviceID, deviceKey, deviceIP, dpsValue, dpsIndex: int, retry=True, retries=0
 ):
     if retries >= MAX_GET_DATA_RETRIES:
         return False
@@ -65,10 +67,12 @@ def setState(
         try:
             client = tinytuya.Device(deviceID, deviceIP, deviceKey)
             client.set_version(3.3)
-            data = client.set_value(dpsIndex, dpsValue)
+            data = await hass.async_add_executor_job(
+                client.set_value, dpsIndex, dpsValue
+            )
             return data
         except Exception:
-            time.sleep(1)
+            await asyncio.sleep(1)
             return setState(
                 deviceID, deviceKey, deviceIP, dpsValue, dpsIndex, retry, retries + 1
             )
@@ -78,7 +82,7 @@ def decrypt_udp(message):
     """Decrypt encrypted UDP broadcasts."""
 
     def _unpad(data):
-        return data[: -ord(data[len(data) - 1 :])]
+        return data[: -ord(data[len(data) - 1:])]
 
     cipher = Cipher(algorithms.AES(UDP_KEY), modes.ECB(), default_backend())
     decryptor = cipher.decryptor()

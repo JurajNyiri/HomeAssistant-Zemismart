@@ -74,7 +74,7 @@ async def setState(
         except Exception:
             await asyncio.sleep(1)
             return setState(
-                deviceID, deviceKey, deviceIP, dpsValue, dpsIndex, retry, retries + 1
+                hass, deviceID, deviceKey, deviceIP, dpsValue, dpsIndex, retry, retries + 1
             )
 
 

@@ -26,7 +26,9 @@ async def getData(hass, deviceID, deviceKey, deviceIP, retry=True, retries=0):
             return data
         except Exception:
             await asyncio.sleep(1)
-            return getData(hass, deviceID, deviceKey, deviceIP, retry, retries + 1)
+            return await getData(
+                hass, deviceID, deviceKey, deviceIP, retry, retries + 1
+            )
 
 
 def getDiscoveredDevices(hass):
@@ -74,7 +76,7 @@ async def setState(
         except Exception:
             await asyncio.sleep(1)
             return setState(
-                hass, deviceID, deviceKey, deviceIP, dpsValue, dpsIndex, retry, retries + 1
+                deviceID, deviceKey, deviceIP, dpsValue, dpsIndex, retry, retries + 1
             )
 
 
@@ -82,7 +84,7 @@ def decrypt_udp(message):
     """Decrypt encrypted UDP broadcasts."""
 
     def _unpad(data):
-        return data[: -ord(data[len(data) - 1:])]
+        return data[: -ord(data[len(data) - 1 :])]
 
     cipher = Cipher(algorithms.AES(UDP_KEY), modes.ECB(), default_backend())
     decryptor = cipher.decryptor()

@@ -1,9 +1,8 @@
 import voluptuous as vol
 
 from homeassistant import config_entries
-from .discovery import discover
-from .const import DOMAIN, DEVICE_IP, DEVICE_KEY, _LOGGER, DEVICE_ID, ADD_MANUALLY
-from .utils import getData, getDiscoveredDevices
+from .const import DOMAIN, DEVICE_IP, DEVICE_KEY, _LOGGER, DEVICE_ID
+from .utils import getData
 
 
 @config_entries.HANDLERS.register(DOMAIN)
@@ -17,44 +16,7 @@ class FlowHandler(config_entries.ConfigFlow):
         return await self.async_step_device_select()
 
     async def async_step_device_select(self, user_input=None):
-        """Select the device to add."""
-        if DOMAIN not in self.hass.data:
-            self.hass.data[DOMAIN] = {}
-
-        errors = {}
-        if user_input is not None:
-            try:
-                if user_input[DEVICE_IP] == ADD_MANUALLY:
-                    return await self.async_step_device_manual()
-                else:
-                    self.deviceIP = user_input[DEVICE_IP]
-                    self.deviceID = self.hass.data[DOMAIN]["discovery"].devices[
-                        self.deviceIP
-                    ]["gwId"]
-                    return await self.async_step_device_data()
-
-            except Exception as e:
-                errors["base"] = "unknown"
-                _LOGGER.error(e)
-        else:
-            self.hass.data[DOMAIN]["discovery"] = await discover()
-        discoveredIPs = getDiscoveredDevices(self.hass)
-        self.deviceIP = ""
-
-        if len(discoveredIPs) > 0:
-            return self.async_show_form(
-                step_id="device_select",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(
-                            DEVICE_IP, description={"suggested_value": self.deviceIP}
-                        ): vol.In(discoveredIPs + [ADD_MANUALLY]),
-                    }
-                ),
-                errors=errors,
-            )
-        else:
-            return await self.async_step_device_manual()
+        return await self.async_step_device_manual()
 
     async def async_step_device_data(self, user_input=None):
         errors = {}
@@ -64,7 +26,9 @@ class FlowHandler(config_entries.ConfigFlow):
             try:
                 self.deviceKey = user_input[DEVICE_KEY]
 
-                data = await getData(self.hass, self.deviceID, self.deviceKey, self.deviceIP)
+                data = await getData(
+                    self.hass, self.deviceID, self.deviceKey, self.deviceIP
+                )
 
                 if data:
                     return self.async_create_entry(
@@ -106,7 +70,9 @@ class FlowHandler(config_entries.ConfigFlow):
                 self.deviceID = user_input[DEVICE_ID]
                 self.deviceKey = user_input[DEVICE_KEY]
 
-                data = await getData(self.hass, self.deviceID, self.deviceKey, self.deviceIP)
+                data = await getData(
+                    self.hass, self.deviceID, self.deviceKey, self.deviceIP
+                )
                 if data:
                     return self.async_create_entry(
                         title=self.deviceIP,

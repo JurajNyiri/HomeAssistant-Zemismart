@@ -36,8 +36,7 @@ from .const import (
     DEVICE_KEY,
     SWING_MODES,
     _LOGGER,
-    HVAC_MODE_OFF,
-    HVAC_MODE_HEAT,
+    HVACMode,
     PRESET_MODES,
     SERVICE_LOCK,
     SERVICE_UNLOCK,
@@ -129,9 +128,9 @@ class ZemismartClimateEntity(ClimateEntity):
             )
             return "unavailable"
         if self.dps["1"]:
-            return HVAC_MODE_HEAT
+            return HVACMode.HEAT
         else:
-            return HVAC_MODE_OFF
+            return HVACMode.OFF
 
     @property
     def supported_features(self):
@@ -288,9 +287,9 @@ class ZemismartClimateEntity(ClimateEntity):
 
     async def async_set_hvac_mode(self, hvac_mode):
         if self.isAvailable:
-            if hvac_mode == HVAC_MODE_HEAT:
+            if hvac_mode == HVACMode.HEAT:
                 await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, True, 1)
-            elif hvac_mode == HVAC_MODE_OFF:
+            elif hvac_mode == HVACMode.OFF:
                 await setState(self._hass, self.deviceID, self.deviceKey, self.deviceIP, False, 1)
             else:
                 _LOGGER.warn("Chosen hvac_mode=%s is incorrect preset.", str(hvac_mode))

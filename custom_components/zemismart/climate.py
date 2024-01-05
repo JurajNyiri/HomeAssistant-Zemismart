@@ -13,7 +13,7 @@ from homeassistant.components.climate import ClimateEntity
 from homeassistant.util import slugify
 from homeassistant.const import (
     ATTR_TEMPERATURE,
-    TEMP_CELSIUS,
+    UnitOfTemperature,
 )
 from homeassistant.helpers import entity_platform
 from typing import Callable
@@ -188,7 +188,7 @@ class ZemismartClimateEntity(ClimateEntity):
 
     @property
     def temperature_unit(self):
-        return TEMP_CELSIUS
+        return UnitOfTemperature.CELSIUS
 
     @property
     def target_temperature(self):
